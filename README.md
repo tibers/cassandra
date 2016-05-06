@@ -32,6 +32,7 @@
     * [cassandra::schema::cql_type](#defined-type-cassandraschemacql_type)
     * [cassandra::schema::index](#defined-type-cassandraschemaindex)
     * [cassandra::schema::keyspace](#defined-type-cassandraschemakeyspace)
+    * [cassandra::schema::permission](#defined-type-cassandraschemapermission)
     * [cassandra::schema::table](#defined-type-cassandraschematable)
     * [cassandra::schema::user](#defined-type-cassandraschemauser)
 5. [Limitations - OS compatibility, etc.](#limitations)
@@ -3238,6 +3239,10 @@ be passed to the `create_resources` function. Default: {}.
 Creates new `cassandra::schema::keyspace` resources. Valid options: a hash to
 be passed to the `create_resources` function. Default: {}.
 
+##### `permissions`
+Creates new `cassandra::schema::permission` resources. Valid options: a hash
+to be passed to the `create_resources` function. Default: {}.
+
 ##### `tables`
 Creates new `cassandra::schema::table` resources. Valid options: a hash to
 be passed to the `create_resources` function. Default: {}.
@@ -3460,6 +3465,14 @@ false on a keyspace using the SimpleStrategy. Default value true.
 
 ##### `keyspace_name`
 The name of the keyspace to be created. Defaults to the name of the resource.
+
+### Defined Type cassandra::schema::permission
+
+Grant or revoke permissions within the schema.  Please see the example code
+in the [Begining with Cassandra](#beginning-with-cassandra) section of this
+document.
+
+#### Attributes
 
 ### Defined Type cassandra::schema::table
 
