@@ -1,34 +1,51 @@
 #############################################################################
-# This is for placing in the getting started section of the README file.
-#############################################################################
-# Install Cassandra 2.2.5 onto a system and create a basic keyspace, table
-# and index.  The node itself becomes a seed for the cluster.
-#
-# Tested on CentOS 7
+# Specify different storage locations
 #############################################################################
 
 # Cassandra pre-requisites
 include cassandra::datastax_repo
 include cassandra::java
 
+# Specify the storage locations
+$commitlog_directory = '/appdata/cassandra/commitlog'
+$data_file_directory = '/appdata/cassandra/data'
+$saved_caches_directory = '/appdata/cassandra/saved_caches'
+
+file { '/appdata':
+  ensure => directory,
+  mode   => '0755',
+} ->
+file { '/appdata/cassandra':
+  ensure  => directory,
+  owner   => 'cassandra',
+  group   => 'cassandra',
+  require => Package['cassandra'],
+  before  => Service['cassandra'],
+} ->
+file { [$commitlog_directory, $data_file_directory, $saved_caches_directory]:
+  ensure  => directory,
+  owner   => 'cassandra',
+  group   => 'cassandra',
+  require => Package['cassandra'],
+  before  => Service['cassandra'],
+}
+
 # Create a cluster called MyCassandraCluster which uses the
 # GossipingPropertyFileSnitch.  In this very basic example
 # the node itself becomes a seed for the cluster.
 
 class { 'cassandra':
-  package_name   => 'cassandra30',
-  settings       => {
+  settings => {
     'authenticator'               => 'PasswordAuthenticator',
     'cluster_name'                => 'MyCassandraCluster',
-    'commitlog_directory'         => '/var/lib/cassandra/commitlog',
+    'commitlog_directory'         => $commitlog_directory,
     'commitlog_sync'              => 'periodic',
     'commitlog_sync_period_in_ms' => 10000,
-    'data_file_directories'       => ['/var/lib/cassandra/data'],
+    'data_file_directories'       => [$data_file_directory],
     'endpoint_snitch'             => 'GossipingPropertyFileSnitch',
-    'hints_directory'             => '/var/lib/cassandra/hints',
     'listen_address'              => $::ipaddress,
     'partitioner'                 => 'org.apache.cassandra.dht.Murmur3Partitioner',
-    'saved_caches_directory'      => '/var/lib/cassandra/saved_caches',
+    'saved_caches_directory'      => $saved_caches_directory,
     'seed_provider'               => [
       {
         'class_name' => 'org.apache.cassandra.locator.SimpleSeedProvider',
@@ -41,8 +58,7 @@ class { 'cassandra':
     ],
     'start_native_transport'      => true,
   },
-  service_ensure => running,
-  require        => Class['cassandra::datastax_repo', 'cassandra::java'],
+  require  => Class['cassandra::datastax_repo', 'cassandra::java'],
 }
 
 class { 'cassandra::datastax_agent':
@@ -63,8 +79,7 @@ class { 'cassandra::datastax_agent':
 }
 
 class { 'cassandra::optutils':
-  package_name => 'cassandra30-tools',
-  require      => Class['cassandra'],
+  require => Class['cassandra']
 }
 
 class { 'cassandra::schema':
@@ -115,50 +130,18 @@ class { 'cassandra::schema':
   },
 }
 
-if $::memorysize_mb < 24576.0 {
-  $max_heap_size_in_mb = floor($::memorysize_mb / 2)
-} elsif $::memorysize_mb < 8192.0 {
-  $max_heap_size_in_mb = floor($::memorysize_mb / 4)
-} else {
-  $max_heap_size_in_mb = 8192
-}
-
 $heap_new_size = $::processorcount * 100
 
-cassandra::file { "Set Java/Cassandra max heap size to ${max_heap_size_in_mb}.":
+class { 'cassandra::file':
   file       => 'cassandra-env.sh',
   file_lines => {
     'MAX_HEAP_SIZE' => {
-      line  => "MAX_HEAP_SIZE='${max_heap_size_in_mb}M'",
-      match => '^#?MAX_HEAP_SIZE=.*',
+      line  => 'MAX_HEAP_SIZE="1024M"',
+      match => '#MAX_HEAP_SIZE="4G"',
     },
-  }
-}
-
-cassandra::file { "Set Java/Cassandra heap new size to ${heap_new_size}.":
-  file       => 'cassandra-env.sh',
-  file_lines => {
     'HEAP_NEWSIZE'  => {
       line  => "HEAP_NEWSIZE='${heap_new_size}M'",
-      match => '^#?HEAP_NEWSIZE=.*',
+      match => '#HEAP_NEWSIZE="800M"',
     }
   }
-}
-
-$tmpdir = '/var/lib/cassandra/tmp'
-
-file { $tmpdir:
-  ensure => directory,
-  owner  => 'cassandra',
-  group  => 'cassandra',
-}
-
-cassandra::file { 'Set java.io.tmpdir':
-  file       => 'jvm.options',
-  file_lines => {
-    'java.io.tmpdir' => {
-      line => "-Djava.io.tmpdir=${tmpdir}",
-    },
-  },
-  require    => File[$tmpdir],
 }

@@ -13,6 +13,14 @@ describe 'cassandra::schema::cql_type' do
   end
 
   let!(:stdlib_stubs) do
+    MockFunction.new('concat') do |f|
+      f.stubbed.with([], '/etc/cassandra')
+       .returns(['/etc/cassandra'])
+      f.stubbed.with([], '/etc/cassandra/default.conf')
+       .returns(['/etc/cassandra/default.conf'])
+      f.stubbed.with(['/etc/cassandra'], '/etc/cassandra/default.conf')
+       .returns(['/etc/cassandra', '/etc/cassandra/default.conf'])
+    end
     MockFunction.new('join') do |f|
       f.stubbed.with(['firstname text', 'lastname text'], ', ')
        .returns('firstname text, lastname text')
@@ -43,11 +51,11 @@ describe 'cassandra::schema::cql_type' do
       }
     end
 
-    it { should compile }
-    it { should contain_class('cassandra::schema') }
-    it { should contain_cassandra__schema__cql_type('fullname') }
     it do
-      should contain_exec('/usr/bin/cqlsh   -e "CREATE TYPE IF NOT EXISTS Excelsior.fullname (firstname text, lastname text)"  ')
+      should compile
+      should contain_class('cassandra::schema')
+      should contain_cassandra__schema__cql_type('fullname')
+      should contain_exec('/usr/bin/cqlsh   -e "CREATE TYPE IF NOT EXISTS Excelsior.fullname (firstname text, lastname text)" localhost 9042')
     end
   end
 
@@ -66,11 +74,10 @@ describe 'cassandra::schema::cql_type' do
       }
     end
 
-    it { should contain_cassandra__schema__cql_type('address') }
-
     it do
       should compile
-      should contain_exec('/usr/bin/cqlsh   -e "DROP type Excalibur.address"  ')
+      should contain_cassandra__schema__cql_type('address')
+      should contain_exec('/usr/bin/cqlsh   -e "DROP type Excalibur.address" localhost 9042')
     end
   end
 

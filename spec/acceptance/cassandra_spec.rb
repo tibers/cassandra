@@ -1,22 +1,9 @@
 require 'spec_helper_acceptance'
 
-describe 'cassandra class' do
-  cassandra_install_pp = <<-EOS
-    if $::osfamily == 'RedHat' and $::operatingsystemmajrelease == 7 {
-      $service_systemd = true
-    } elsif $::operatingsystem == 'Debian' and $::operatingsystemmajrelease == 8 {
-      $service_systemd = true
-    } else {
-      $service_systemd = false
-    }
-
+describe 'cassandra::java' do
+  install_java_pp = <<-EOS
     if $::osfamily == 'RedHat' {
-      $cassandra_package = 'cassandra20'
-      $version = '2.0.17-1'
-
-      class { 'cassandra::java':
-        before => Class['cassandra']
-      }
+      include 'cassandra::java'
     } else {
       if $::lsbdistid == 'Ubuntu' {
         class { 'cassandra::java':
@@ -55,724 +42,564 @@ describe 'cassandra class' do
           package_name => 'zulu-8',
         }
       }
-
-      $cassandra_package = 'cassandra'
-      $version = '2.0.17'
-
-      exec { '/bin/chown root:root /etc/apt/sources.list.d/datastax.list':
-        unless  => '/usr/bin/test -O /etc/apt/sources.list.d/datastax.list',
-        require => Class['cassandra::opscenter']
-      }
-    }
-
-    class { 'cassandra::datastax_repo': } ->
-    file { '/var/lib/cassandra':
-      ensure => directory,
-    } ->
-    file { '/var/lib/cassandra/commitlog':
-      ensure => directory,
-    } ->
-    file { '/var/lib/cassandra/caches':
-      ensure => directory,
-    } ->
-    file { [ '/var/lib/cassandra/data' ]:
-      ensure => directory,
-    } ->
-    class { 'cassandra':
-      authenticator               => 'PasswordAuthenticator',
-      cassandra_9822              => true,
-      cassandra_yaml_tmpl         => 'cassandra/cassandra20.yaml.erb',
-      commitlog_directory_mode    => '0770',
-      data_file_directories_mode  => '0770',
-      package_ensure              => $version,
-      package_name                => $cassandra_package,
-      saved_caches_directory_mode => '0770',
-      service_systemd             => $service_systemd
-    }
-
-    class { '::cassandra::datastax_agent':
-      service_systemd => $service_systemd,
-      require         => Class['cassandra']
-    }
-
-    class { '::cassandra::opscenter::pycrypto':
-      manage_epel => true,
-      before      => Class['::cassandra::opscenter'],
-      require     => Class['::cassandra'],
-    }
-
-    class { '::cassandra::opscenter':
-      config_purge    => true,
-      service_systemd => $service_systemd,
-      require         => Class['cassandra'],
-    }
-
-    cassandra::opscenter::cluster_name { 'Cluster1':
-      cassandra_seed_hosts => 'host1,host2',
     }
   EOS
 
-  describe '########### Cassandra 2.0 installation.' do
+  describe '########### Java installation.' do
     it 'should work with no errors' do
-      apply_manifest(cassandra_install_pp, catch_failures: true)
+      apply_manifest(install_java_pp, catch_failures: true)
     end
     it 'check code is idempotent' do
-      expect(apply_manifest(cassandra_install_pp,
+      expect(apply_manifest(install_java_pp,
                             catch_failures: true).exit_code).to be_zero
     end
   end
+end
 
-  firewall_config_pp = <<-EOS
-    if $::osfamily == 'RedHat' {
-      $cassandra_package = 'cassandra20'
-      $version = '2.0.17-1'
-    } else {
-      $cassandra_package = 'cassandra'
-      $version = '2.0.17'
-    }
-
-    class { 'cassandra':
-      authenticator               => 'PasswordAuthenticator',
-      cassandra_9822              => true,
-      cassandra_yaml_tmpl         => 'cassandra/cassandra20.yaml.erb',
-      commitlog_directory_mode    => '0770',
-      data_file_directories_mode  => '0770',
-      package_ensure              => $version,
-      package_name                => $cassandra_package,
-      saved_caches_directory_mode => '0770',
-    }
-
-    include '::cassandra::datastax_agent'
-    include '::cassandra::opscenter'
-
-    # This really sucks but Docker, CentOS 6 and iptables don't play nicely
-    # together.  Therefore we can't test the firewall on this platform :-(
-    if $::operatingsystem != CentOS and $::operatingsystemmajrelease != 6 {
-      include '::cassandra::firewall_ports'
-    }
+describe 'cassandra::datastax_repo' do
+  install_datastax_repo_pp = <<-EOS
+    class { 'cassandra::datastax_repo': }
   EOS
 
-  describe '########### Firewall configuration.' do
+  describe '########### DataStax Repository installation.' do
     it 'should work with no errors' do
-      apply_manifest(firewall_config_pp, catch_failures: true)
-    end
-  end
-
-  describe service('cassandra') do
-    it { is_expected.to be_running }
-    it { is_expected.to be_enabled }
-  end
-
-  describe service('datastax-agent') do
-    it { is_expected.to be_running }
-    it { is_expected.to be_enabled }
-  end
-
-  describe service('opscenterd') do
-    it { is_expected.to be_running }
-    it { is_expected.to be_enabled }
-  end
-
-  cassandra_uninstall20_pp = <<-EOS
-    if $::osfamily == 'RedHat' {
-        $cassandra_optutils_package = 'cassandra20-tools'
-        $cassandra_package = 'cassandra20'
-    } else {
-        $cassandra_optutils_package = 'cassandra-tools'
-        $cassandra_package = 'cassandra'
-    }
-
-    package { [$cassandra_optutils_package, $cassandra_package ]:
-      ensure => absent
-    }
-  EOS
-
-  describe '########### Uninstall Cassandra 2.0.' do
-    it 'should work with no errors' do
-      apply_manifest(cassandra_uninstall20_pp, catch_failures: true)
-    end
-  end
-
-  cassandra_upgrade21_pp = <<-EOS
-    if $::osfamily == 'RedHat' and $::operatingsystemmajrelease == 7 {
-        $service_systemd = true
-    } elsif $::operatingsystem == 'Debian' and $::operatingsystemmajrelease == 8 {
-        $service_systemd = true
-    } else {
-        $service_systemd = false
-    }
-
-    if $::osfamily == 'RedHat' {
-        $cassandra_optutils_package = 'cassandra21-tools'
-        $cassandra_package = 'cassandra21'
-        $version = '2.1.13-1'
-    } else {
-        $cassandra_optutils_package = 'cassandra-tools'
-        $cassandra_package = 'cassandra'
-        $version = '2.1.13'
-    }
-
-    class { 'cassandra':
-      authenticator               => 'PasswordAuthenticator',
-      cassandra_9822              => true,
-      commitlog_directory_mode    => '0770',
-      data_file_directories_mode  => '0770',
-      listen_interface            => 'lo',
-      package_ensure              => $version,
-      package_name                => $cassandra_package,
-      rpc_interface               => 'lo',
-      saved_caches_directory_mode => '0770',
-      service_systemd             => $service_systemd
-    }
-
-    class { 'cassandra::optutils':
-      ensure       => $version,
-      package_name => $cassandra_optutils_package,
-      require      => Class['cassandra']
-    }
-  EOS
-
-  describe '########### Cassandra 2.1 installation.' do
-    it 'should work with no errors' do
-      apply_manifest(cassandra_upgrade21_pp, catch_failures: true)
+      apply_manifest(install_datastax_repo_pp, catch_failures: true)
     end
     it 'check code is idempotent' do
-      expect(apply_manifest(cassandra_upgrade21_pp,
+      expect(apply_manifest(install_datastax_repo_pp,
                             catch_failures: true).exit_code).to be_zero
     end
   end
+end
 
-  describe service('cassandra') do
-    it { is_expected.to be_running }
-    it { is_expected.to be_enabled }
-  end
+describe 'cassandra' do
+  nodeset = ENV['BEAKER_set']
+  opsys = nodeset.split('_')[1]
 
-  cassandra_uninstall21_pp = <<-EOS
-    Exec {
-      path => [
-        '/usr/local/bin',
-        '/opt/local/bin',
-        '/usr/bin',
-        '/usr/sbin',
-        '/bin',
-        '/sbin'],
-      logoutput => true,
-    }
+  # Ubuntu 16 only works with Cassandra 3.X
+  cassandra_version = if opsys == 'ubuntu16'
+                        ['3.0.3']
+                      else
+                        ['2.2.7', '3.0.3']
+                      end
 
-    if $::osfamily == 'RedHat' {
-        $cassandra_optutils_package = 'cassandra21-tools'
-        $cassandra_package = 'cassandra21'
-    } else {
+  ruby_lt_190 = case opsys
+                when 'centos6' then true
+                when 'ubuntu12' then true
+                else false
+                end
+
+  cassandra_version.each do |version|
+    cassandra_install_pp = <<-EOS
+      if $::osfamily == 'RedHat' {
+        $version = '#{version}-1'
+
+        if $version == '2.2.7-1' {
+          $cassandra_optutils_package = 'cassandra22-tools'
+          $cassandra_package = 'cassandra22'
+        } else {
+          $cassandra_optutils_package = 'cassandra30-tools'
+          $cassandra_package = 'cassandra30'
+        }
+      } else {
         $cassandra_optutils_package = 'cassandra-tools'
         $cassandra_package = 'cassandra'
-    }
+        $version = '#{version}'
 
-    package { [$cassandra_optutils_package, $cassandra_package ]:
-      ensure => absent
-    } ->
-    exec { 'rm -rf /var/lib/cassandra/*/*': }
-  EOS
+        if $::lsbdistid == 'Ubuntu' {
+          if $::operatingsystemmajrelease >= 16 {
+            # Workarounds for amonst other things CASSANDRA-11850
+            Exec {
+              environment => [ 'CQLSH_NO_BUNDLED=TRUE' ]
+            }
 
-  describe '########### Uninstall Cassandra 2.1.' do
-    it 'should work with no errors' do
-      apply_manifest(cassandra_uninstall21_pp, catch_failures: true)
-    end
-  end
+            exec { '/usr/bin/wget http://launchpadlibrarian.net/109052632/python-support_1.0.15_all.deb':
+              cwd     => '/var/tmp',
+              creates => '/var/tmp/python-support_1.0.15_all.deb',
+            } ~>
+            exec { '/usr/bin/dpkg -i /var/tmp/python-support_1.0.15_all.deb':
+              refreshonly => true,
+            } ->
+            package { 'cassandra-driver':
+              provider => 'pip',
+              before   => Class['cassandra']
+            }
+          }
+        }
 
-  cassandra_upgrade22_pp = <<-EOS
-    if $::osfamily == 'RedHat' and $::operatingsystemmajrelease == 7 {
-        $service_systemd = true
-    } elsif $::operatingsystem == 'Debian' and $::operatingsystemmajrelease == 8 {
-        $service_systemd = true
-    } else {
-        $service_systemd = false
-    }
-
-    if $::osfamily == 'RedHat' {
-        $cassandra_optutils_package = 'cassandra22-tools'
-        $cassandra_package = 'cassandra22'
-        $version = '2.2.5-1'
-    } else {
-        $cassandra_optutils_package = 'cassandra-tools'
-        $cassandra_package = 'cassandra'
-        $version = '2.2.5'
-    }
-
-    class { 'cassandra':
-      authenticator               => 'PasswordAuthenticator',
-      cassandra_9822              => true,
-      commitlog_directory_mode    => '0770',
-      data_file_directories_mode  => '0770',
-      listen_interface            => 'lo',
-      package_ensure              => $version,
-      package_name                => $cassandra_package,
-      rpc_interface               => 'lo',
-      saved_caches_directory_mode => '0770',
-      service_systemd             => $service_systemd
-    }
-
-    class { 'cassandra::optutils':
-      package_ensure => $version,
-      package_name   => $cassandra_optutils_package,
-      require        => Class['cassandra']
-    }
-
-    $heap_new_size = $::processorcount * 100
-
-    class { 'cassandra::env':
-      file_lines => {
-        'MAX_HEAP_SIZE' => {
-          line  => 'MAX_HEAP_SIZE="1024M"',
-          match => '#MAX_HEAP_SIZE="4G"',
-        },
-        'HEAP_NEWSIZE' => {
-          line  => "HEAP_NEWSIZE='${heap_new_size}M'",
-          match => '#HEAP_NEWSIZE="800M"',
+        exec { '/bin/chown root:root /etc/apt/sources.list.d/datastax.list':
+          unless  => '/usr/bin/test -O /etc/apt/sources.list.d/datastax.list',
+          require => Class['cassandra::datastax_agent']
         }
       }
-    }
-  EOS
 
-  describe '########### Cassandra 2.2 installation.' do
-    it 'should work with no errors' do
-      apply_manifest(cassandra_upgrade22_pp, catch_failures: true)
+      $initial_settings = {
+        'authenticator'               => 'PasswordAuthenticator',
+        'cluster_name'                => 'MyCassandraCluster',
+        'commitlog_directory'         => '/var/lib/cassandra/commitlog',
+        'commitlog_sync'              => 'periodic',
+        'commitlog_sync_period_in_ms' => 10000,
+        'data_file_directories'       => ['/var/lib/cassandra/data'],
+        'endpoint_snitch'             => 'GossipingPropertyFileSnitch',
+        'listen_address'              => $::ipaddress,
+        'partitioner'                 => 'org.apache.cassandra.dht.Murmur3Partitioner',
+        'saved_caches_directory'      => '/var/lib/cassandra/saved_caches',
+        'seed_provider'               => [
+          {
+            'class_name' => 'org.apache.cassandra.locator.SimpleSeedProvider',
+            'parameters' => [
+              {
+                'seeds' => $::ipaddress,
+              },
+            ],
+          },
+        ],
+        'start_native_transport'      => true,
+      }
+
+      if $version =~ /^2/ {
+        $settings = $initial_settings
+      } else {
+        $settings = merge($initial_settings, { 'hints_directory' => '/var/lib/cassandra/hints' })
+      }
+
+
+      if versioncmp($::rubyversion, '1.9.0') < 0 {
+        $service_refresh = false
+      } else {
+        $service_refresh = true
+      }
+
+      class { 'cassandra':
+        cassandra_9822  => true,
+        dc              => 'LON',
+        package_ensure  => $version,
+        package_name    => $cassandra_package,
+        rack            => 'R101',
+        service_ensure  => running,
+        service_refresh => $service_refresh,
+        settings        => $settings,
+      }
+
+      class { 'cassandra::optutils':
+        package_ensure => $version,
+        package_name   => $cassandra_optutils_package,
+        require        => Class['cassandra']
+      }
+
+      class { 'cassandra::datastax_agent':
+        require => Class['cassandra']
+      }
+
+      # This really sucks but Docker, CentOS 6 and iptables don't play nicely
+      # together.  Therefore we can't test the firewall on this platform :-(
+      if $::operatingsystem != CentOS and $::operatingsystemmajrelease != 6 {
+        include '::cassandra::firewall_ports'
+      }
+    EOS
+
+    datastax_agent_cludge_pp = <<-EOS
+      Exec {
+        path => [ '/usr/bin', '/bin'],
+      }
+
+      exec { 'chmod 0640 /var/lib/datastax-agent/conf/address.yaml': }
+    EOS
+
+    describe "########### Cassandra #{version} installation (#{opsys})." do
+      it 'should work with no errors' do
+        apply_manifest(cassandra_install_pp, catch_failures: true)
+      end
+
+      it 'Give Cassandra a minute to fully come alive.' do
+        sleep 60
+      end
+
+      if ruby_lt_190
+        it 'should work with no errors (subsequent run)' do
+          apply_manifest(cassandra_install_pp, catch_failures: true)
+        end
+      else
+        it 'check code is idempotent' do
+          apply_manifest(datastax_agent_cludge_pp, catch_failures: true)
+          expect(apply_manifest(cassandra_install_pp,
+                                catch_failures: true).exit_code).to be_zero
+        end
+      end
     end
-    it 'check code is idempotent' do
-      expect(apply_manifest(cassandra_upgrade22_pp,
-                            catch_failures: true).exit_code).to be_zero
+
+    describe service('cassandra') do
+      it do
+        is_expected.to be_running
+        is_expected.to be_enabled
+      end
     end
-  end
 
-  describe service('cassandra') do
-    it { is_expected.to be_running }
-    it { is_expected.to be_enabled }
-  end
+    describe service('datastax-agent') do
+      it do
+        is_expected.to be_running
+        is_expected.to be_enabled
+      end
+    end
 
-  schema_testing_create_pp = <<-EOS
-    if $::osfamily == 'RedHat' and $::operatingsystemmajrelease == 7 {
-        $service_systemd = true
-    } elsif $::operatingsystem == 'Debian' and $::operatingsystemmajrelease == 8 {
-        $service_systemd = true
-    } else {
-        $service_systemd = false
-    }
+    schema_testing_create_pp = <<-EOS
+      #{cassandra_install_pp}
 
-    if $::osfamily == 'RedHat' {
-        $cassandra_optutils_package = 'cassandra22-tools'
-        $cassandra_package = 'cassandra22'
-        $version = '2.2.5-1'
-    } else {
-        $cassandra_optutils_package = 'cassandra-tools'
-        $cassandra_package = 'cassandra'
-        $version = '2.2.5'
-    }
-
-    class { 'cassandra':
-      authenticator               => 'PasswordAuthenticator',
-      cassandra_9822              => true,
-      commitlog_directory_mode    => '0770',
-      data_file_directories_mode  => '0770',
-      listen_interface            => 'lo',
-      package_ensure              => $version,
-      package_name                => $cassandra_package,
-      rpc_interface               => 'lo',
-      saved_caches_directory_mode => '0770',
-      service_systemd             => $service_systemd
-    }
-
-    $keyspaces = {
-      'mykeyspace' => {
-        ensure          => present,
-        replication_map => {
-          keyspace_class     => 'SimpleStrategy',
-          replication_factor => 1,
-        },
-        durable_writes  => false,
-      },
-    }
-
-    if $::operatingsystem != CentOS and $::operatingsystemmajrelease != 6 {
-      class { 'cassandra::schema':
-        cqlsh_password => 'cassandra',
-        cqlsh_user     => 'cassandra',
-        indexes   => {
-          'users_lname_idx' => {
-             keyspace => 'mykeyspace',
-             table    => 'users',
-             keys     => 'lname',
+      $cql_types = {
+        'fullname' => {
+          'keyspace' => 'mykeyspace',
+          'fields'   => {
+            'fname' => 'text',
+            'lname' => 'text',
           },
         },
-        keyspaces => $keyspaces,
-        tables    => {
-          'users' => {
-            'keyspace' => 'mykeyspace',
-            'columns'       => {
-              'userid'      => 'int',
-              'fname'       => 'text',
-              'lname'       => 'text',
-              'PRIMARY KEY' => '(userid)',
+      }
+
+      $keyspaces = {
+        'mykeyspace' => {
+          ensure          => present,
+          replication_map => {
+            keyspace_class     => 'SimpleStrategy',
+            replication_factor => 1,
+          },
+          durable_writes  => false,
+        },
+      }
+
+      if $::operatingsystem != CentOS {
+        $os_ok = true
+      } else {
+        if $::operatingsystemmajrelease != 6 {
+          $os_ok = true
+        } else {
+          $os_ok = false
+        }
+      }
+
+      if $os_ok {
+        class { 'cassandra::schema':
+          cql_types      => $cql_types,
+          cqlsh_host     => $::ipaddress,
+          cqlsh_password => 'cassandra',
+          cqlsh_user     => 'cassandra',
+          indexes        => {
+            'users_lname_idx' => {
+              keyspace => 'mykeyspace',
+              table    => 'users',
+              keys     => 'lname',
             },
           },
-        },
-        users     => {
-          'spillman' => {
-            password => 'Niner27',
+          keyspaces      => $keyspaces,
+          tables         => {
+            'users' => {
+              'keyspace' => 'mykeyspace',
+              'columns'  => {
+                'userid'      => 'int',
+                'fname'       => 'text',
+                'lname'       => 'text',
+                'PRIMARY KEY' => '(userid)',
+              },
+            },
           },
-          'akers'    => {
-            password  => 'Niner2',
-            superuser => true,
+          users          => {
+            'spillman' => {
+              password => 'Niner27',
+            },
+            'akers'    => {
+              password  => 'Niner2',
+              superuser => true,
+            },
+            'boone'    => {
+              password => 'Niner75',
+            },
           },
-          'boone'    => {
-            password => 'Niner75',
-          },
-        },
+        }
       }
-    }
-  EOS
+    EOS
 
-  describe '########### Schema create.' do
-    it 'should work with no errors' do
-      apply_manifest(schema_testing_create_pp, catch_failures: true)
+    describe '########### Schema create.' do
+      it 'should work with no errors' do
+        apply_manifest(schema_testing_create_pp, catch_failures: true)
+      end
+
+      if ruby_lt_190
+        it 'should work with no errors (subsequent run)' do
+          apply_manifest(schema_testing_create_pp, catch_failures: true)
+        end
+      else
+        it 'check code is idempotent' do
+          expect(apply_manifest(schema_testing_create_pp, catch_failures: true).exit_code).to be_zero
+        end
+      end
     end
-    it 'check code is idempotent' do
-      expect(apply_manifest(schema_testing_create_pp,
-                            catch_failures: true).exit_code).to be_zero
+
+    schema_testing_drop_type_pp = <<-EOS
+     #{cassandra_install_pp}
+
+     $cql_types = {
+       'fullname' => {
+         'keyspace' => 'mykeyspace',
+         'ensure'   => 'absent'
+       }
+     }
+
+     if $::operatingsystem != CentOS {
+       $os_ok = true
+     } else {
+       if $::operatingsystemmajrelease != 6 {
+         $os_ok = true
+       } else {
+         $os_ok = false
+       }
+     }
+
+     if $os_ok {
+       class { 'cassandra::schema':
+         cql_types      => $cql_types,
+         cqlsh_host     => $::ipaddress,
+         cqlsh_user     => 'akers',
+         cqlsh_password => 'Niner2',
+       }
+     }
+    EOS
+
+    describe '########### Schema drop type.' do
+      it 'should work with no errors' do
+        apply_manifest(schema_testing_drop_type_pp, catch_failures: true)
+      end
+
+      if ruby_lt_190
+        it 'should work with no errors (subsequent run)' do
+          apply_manifest(schema_testing_drop_type_pp, catch_failures: true)
+        end
+      else
+        it 'check code is idempotent' do
+          expect(apply_manifest(schema_testing_drop_type_pp, catch_failures: true).exit_code).to be_zero
+        end
+      end
     end
-  end
 
-  schema_testing_drop__index_and_cql_type_pp = <<-EOS
-    if $::osfamily == 'RedHat' and $::operatingsystemmajrelease == 7 {
-        $service_systemd = true
-    } elsif $::operatingsystem == 'Debian' and $::operatingsystemmajrelease == 8 {
-        $service_systemd = true
-    } else {
-        $service_systemd = false
-    }
+    schema_testing_drop_user_pp = <<-EOS
+      #{cassandra_install_pp}
 
-    if $::osfamily == 'RedHat' {
-        $cassandra_optutils_package = 'cassandra22-tools'
-        $cassandra_package = 'cassandra22'
-        $version = '2.2.5-1'
-    } else {
-        $cassandra_optutils_package = 'cassandra-tools'
-        $cassandra_package = 'cassandra'
-        $version = '2.2.5'
-    }
-
-    class { 'cassandra':
-      authenticator               => 'PasswordAuthenticator',
-      cassandra_9822              => true,
-      commitlog_directory_mode    => '0770',
-      data_file_directories_mode  => '0770',
-      listen_interface            => 'lo',
-      package_ensure              => $version,
-      package_name                => $cassandra_package,
-      rpc_interface               => 'lo',
-      saved_caches_directory_mode => '0770',
-      service_systemd             => $service_systemd
-    }
-
-    $cql_types = {
-      'address' => {
-        'keyspace' => 'Excalibur',
-        'ensure'   => 'absent'
+      if $::operatingsystem != CentOS {
+        $os_ok = true
+      } else {
+        if $::operatingsystemmajrelease != 6 {
+          $os_ok = true
+        } else {
+          $os_ok = false
+        }
       }
-    }
 
-    if $::operatingsystem != CentOS and $::operatingsystemmajrelease != 6 {
-      class { 'cassandra::schema':
-        cql_types      => $cql_types,
+      if $os_ok {
+        class { 'cassandra::schema':
+          cqlsh_password      => 'Niner2',
+          cqlsh_host          => $::ipaddress,
+          cqlsh_user          => 'akers',
+          cqlsh_client_config => '/root/.puppetcqlshrc',
+          users               => {
+            'boone' => {
+              ensure => absent,
+            },
+          },
+        }
+     }
+    EOS
+
+    describe '########### Drop the boone user.' do
+      it 'should work with no errors' do
+        apply_manifest(schema_testing_drop_user_pp, catch_failures: true)
+      end
+
+      if ruby_lt_190
+        it 'should work with no errors (subsequent run)' do
+          apply_manifest(schema_testing_drop_user_pp, catch_failures: true)
+        end
+      else
+        it 'check code is idempotent' do
+          expect(apply_manifest(schema_testing_drop_user_pp, catch_failures: true).exit_code).to be_zero
+        end
+      end
+    end
+
+    schema_testing_drop_index_pp = <<-EOS
+      #{cassandra_install_pp}
+
+      if $::operatingsystem != CentOS {
+        $os_ok = true
+      } else {
+        if $::operatingsystemmajrelease != 6 {
+          $os_ok = true
+        } else {
+          $os_ok = false
+        }
+      }
+
+      if $os_ok {
+        class { 'cassandra::schema':
+        cqlsh_host     => $::ipaddress,
         cqlsh_user     => 'akers',
         cqlsh_password => 'Niner2',
         indexes        => {
-          'users_emails_idx' => {
+          'users_lname_idx' => {
              ensure   => absent,
-             keyspace => 'Excalibur',
+             keyspace => 'mykeyspace',
              table    => 'users',
+            },
           },
-        },
-        users          => {
-          'spillman' => {
-            ensure   => absent,
-          },
-          'akers'    => {
-            password  => 'Niner2',
-            superuser => true,
-          },
-          'boone'    => {
-            password => 'Niner75',
-          },
-        },
+        }
       }
-    }
-  EOS
+    EOS
 
-  describe '########### Schema drop (Indexes, Users & Types).' do
-    it 'should work with no errors' do
-      apply_manifest(schema_testing_drop__index_and_cql_type_pp,
-                     catch_failures: true)
+    describe '########### Schema drop index.' do
+      it 'should work with no errors' do
+        apply_manifest(schema_testing_drop_index_pp, catch_failures: true)
+      end
+
+      if ruby_lt_190
+        it 'should run with no errors (subsequent run)' do
+          apply_manifest(schema_testing_drop_index_pp, catch_failures: true)
+        end
+      else
+        it 'check code is idempotent' do
+          expect(apply_manifest(schema_testing_drop_index_pp, catch_failures: true).exit_code).to be_zero
+        end
+      end
     end
-    it 'check code is idempotent' do
-      expect(apply_manifest(schema_testing_drop__index_and_cql_type_pp,
-                            catch_failures: true).exit_code).to be_zero
+
+    schema_testing_drop_pp = <<-EOS
+      #{cassandra_install_pp}
+
+      if $::operatingsystem != CentOS {
+        $os_ok = true
+      } else {
+        if $::operatingsystemmajrelease != 6 {
+          $os_ok = true
+        } else {
+          $os_ok = false
+        }
+      }
+
+      if $os_ok {
+        class { 'cassandra::schema':
+          cqlsh_host     => $ipaddress,
+          cqlsh_password => 'Niner2',
+          cqlsh_user     => 'akers',
+          tables         => {
+            'users' => {
+              ensure   => absent,
+              keyspace => 'mykeyspace',
+            },
+          },
+        }
+      }
+    EOS
+
+    describe '########### Schema drop (table).' do
+      it 'should work with no errors' do
+        apply_manifest(schema_testing_drop_pp, catch_failures: true)
+      end
+
+      if ruby_lt_190
+        it 'should work with no errors (subsequent run)' do
+          apply_manifest(schema_testing_drop_pp, catch_failures: true)
+        end
+      else
+        it 'check code is idempotent' do
+          expect(apply_manifest(schema_testing_drop_pp, catch_failures: true).exit_code).to be_zero
+        end
+      end
     end
-  end
 
-  schema_testing_drop_user_pp = <<-EOS
-    if $::osfamily == 'RedHat' and $::operatingsystemmajrelease == 7 {
-        $service_systemd = true
-    } elsif $::operatingsystem == 'Debian' and $::operatingsystemmajrelease == 8 {
-        $service_systemd = true
-    } else {
-        $service_systemd = false
-    }
+    schema_testing_drop_pp = <<-EOS
+      #{cassandra_install_pp}
 
-    if $::osfamily == 'RedHat' {
+      $keyspaces = {
+        'mykeyspace' => {
+          ensure => absent,
+        }
+      }
+
+      if $::operatingsystem != CentOS {
+        $os_ok = true
+      } else {
+        if $::operatingsystemmajrelease != 6 {
+          $os_ok = true
+        } else {
+          $os_ok = false
+        }
+      }
+
+      if $os_ok {
+        class { 'cassandra::schema':
+          cqlsh_host     => $::ipaddress,
+          cqlsh_password => 'Niner2',
+          cqlsh_user     => 'akers',
+          keyspaces      => $keyspaces,
+        }
+      }
+    EOS
+
+    describe '########### Schema drop (Keyspaces).' do
+      it 'should work with no errors' do
+        apply_manifest(schema_testing_drop_pp, catch_failures: true)
+      end
+      if ruby_lt_190
+        it 'should work with no errors (subsequent run)' do
+          apply_manifest(schema_testing_drop_pp, catch_failures: true)
+        end
+      else
+        it 'check code is idempotent' do
+          expect(apply_manifest(schema_testing_drop_pp, catch_failures: true).exit_code).to be_zero
+        end
+      end
+    end
+
+    describe '########### Gather service information (when in debug mode).' do
+      it 'Show the cassandra system log.' do
+        shell("grep -v -e '^INFO' -e '^\s*INFO' /var/log/cassandra/system.log")
+      end
+    end
+
+    next unless version != cassandra_version.last
+
+    cassandra_uninstall_pp = <<-EOS
+      Exec {
+        path => [
+          '/usr/local/bin',
+          '/opt/local/bin',
+          '/usr/bin',
+          '/usr/sbin',
+          '/bin',
+          '/sbin'],
+        logoutput => true,
+      }
+
+      if $::osfamily == 'RedHat' {
         $cassandra_optutils_package = 'cassandra22-tools'
         $cassandra_package = 'cassandra22'
-        $version = '2.2.5-1'
-    } else {
+      } else {
         $cassandra_optutils_package = 'cassandra-tools'
         $cassandra_package = 'cassandra'
-        $version = '2.2.5'
-    }
-
-    class { 'cassandra':
-      authenticator               => 'PasswordAuthenticator',
-      cassandra_9822              => true,
-      commitlog_directory_mode    => '0770',
-      data_file_directories_mode  => '0770',
-      listen_interface            => 'lo',
-      package_ensure              => $version,
-      package_name                => $cassandra_package,
-      rpc_interface               => 'lo',
-      saved_caches_directory_mode => '0770',
-      service_systemd             => $service_systemd
-    }
-
-    if $::operatingsystem != CentOS and $::operatingsystemmajrelease != 6 {
-      class { 'cassandra::schema':
-        cqlsh_password      => 'Niner2',
-        cqlsh_user          => 'akers',
-        cqlsh_client_config => '/root/.puppetcqlshrc',
-        users               => {
-          'boone' => {
-            ensure => absent,
-          },
-        },
-      }
-    }
-  EOS
-
-  describe '########### Drop the boone user.' do
-    it 'should work with no errors' do
-      apply_manifest(schema_testing_drop_user_pp, catch_failures: true)
-    end
-    it 'check code is idempotent' do
-      expect(apply_manifest(schema_testing_drop_user_pp,
-                            catch_failures: true).exit_code).to be_zero
-    end
-  end
-
-  schema_testing_drop_pp = <<-EOS
-    if $::osfamily == 'RedHat' and $::operatingsystemmajrelease == 7 {
-        $service_systemd = true
-    } elsif $::operatingsystem == 'Debian' and $::operatingsystemmajrelease == 8 {
-        $service_systemd = true
-    } else {
-        $service_systemd = false
-    }
-
-    if $::osfamily == 'RedHat' {
-        $cassandra_optutils_package = 'cassandra22-tools'
-        $cassandra_package = 'cassandra22'
-        $version = '2.2.5-1'
-    } else {
-        $cassandra_optutils_package = 'cassandra-tools'
-        $cassandra_package = 'cassandra'
-        $version = '2.2.5'
-    }
-
-    class { 'cassandra':
-      authenticator               => 'PasswordAuthenticator',
-      cassandra_9822              => true,
-      commitlog_directory_mode    => '0770',
-      data_file_directories_mode  => '0770',
-      listen_interface            => 'lo',
-      package_ensure              => $version,
-      package_name                => $cassandra_package,
-      rpc_interface               => 'lo',
-      saved_caches_directory_mode => '0770',
-      service_systemd             => $service_systemd
-    }
-
-    $keyspaces = {
-      'Excelsior' => {
-        ensure => absent,
-      }
-    }
-
-    if $::operatingsystem != CentOS and $::operatingsystemmajrelease != 6 {
-      class { 'cassandra::schema':
-        cqlsh_password => 'Niner2',
-        cqlsh_user     => 'akers',
-        keyspaces      => $keyspaces,
-      }
-    }
-  EOS
-
-  describe '########### Schema drop (Keyspaces).' do
-    it 'should work with no errors' do
-      apply_manifest(schema_testing_drop_pp, catch_failures: true)
-    end
-    it 'check code is idempotent' do
-      expect(apply_manifest(schema_testing_drop_pp,
-                            catch_failures: true).exit_code).to be_zero
-    end
-  end
-
-  cassandra_uninstall22_pp = <<-EOS
-     if $::osfamily == 'RedHat' {
-         $cassandra_optutils_package = 'cassandra22-tools'
-         $cassandra_package = 'cassandra22'
-     } else {
-         $cassandra_optutils_package = 'cassandra-tools'
-         $cassandra_package = 'cassandra'
-     }
-
-     package { $cassandra_optutils_package:
-       ensure => absent
-     } ->
-     package { $cassandra_package:
-       ensure => absent
-     }
-   EOS
-
-  cassandra_upgrade30_pp = <<-EOS
-     if $::osfamily == 'RedHat' and $::operatingsystemmajrelease == 7 {
-         $service_systemd = true
-     } elsif $::operatingsystem == 'Debian'
-       and $::operatingsystemmajrelease == 8 {
-         $service_systemd = true
-     } else {
-         $service_systemd = false
-     }
-
-     if $::osfamily == 'RedHat' {
-         $cassandra_optutils_package = 'cassandra30-tools'
-         $cassandra_package = 'cassandra30'
-         $version = '3.0.3-1'
-     } else {
-         $cassandra_optutils_package = 'cassandra-tools'
-         $cassandra_package = 'cassandra'
-         $version = '3.0.3'
       }
 
-     class { 'cassandra':
-       authenticator               => 'PasswordAuthenticator',
-       cassandra_9822              => true,
-       commitlog_directory_mode    => '0770',
-       data_file_directories_mode  => '0770',
-       hints_directory             => '/var/lib/cassandra/hints',
-       listen_interface            => 'lo',
-       package_ensure              => $version,
-       package_name                => $cassandra_package,
-       rpc_interface               => 'lo',
-       saved_caches_directory_mode => '0770',
-     }
+      service { 'cassandra':
+        ensure => stopped,
+      } ->
+      package { $cassandra_optutils_package:
+        ensure => absent
+      } ->
+      package { $cassandra_package:
+        ensure => absent
+      } ->
+      exec { 'rm -rf /var/lib/cassandra/*/* /var/log/cassandra/*': }
+    EOS
 
-     class { 'cassandra::optutils':
-       ensure       => $version,
-       package_name => $cassandra_optutils_package,
-       require      => Class['cassandra']
-     }
-   EOS
-
-  describe '########### Uninstall Cassandra 2.2.' do
-    it 'should work with no errors' do
-      apply_manifest(cassandra_uninstall22_pp, catch_failures: true)
-    end
-  end
-
-  describe '########### Cassandra 3.0 installation.' do
-    it 'should work with no errors' do
-      apply_manifest(cassandra_upgrade30_pp, catch_failures: true)
-    end
-
-    it 'Give Cassandra 3.0 a minute to fully come alive.' do
-      sleep 60
-    end
-
-    it 'check code is idempotent' do
-      expect(apply_manifest(cassandra_upgrade30_pp,
-                            catch_failures: true).exit_code).to be_zero
-    end
-  end
-
-  describe service('cassandra') do
-    it { is_expected.to be_running }
-    it { is_expected.to be_enabled }
-  end
-
-  check_against_previous_version_pp = <<-EOS
-    if $::osfamily == 'RedHat' and $::operatingsystemmajrelease == 7 {
-      $service_systemd = true
-    } elsif $::operatingsystem == 'Debian'
-      and $::operatingsystemmajrelease == 8 {
-        $service_systemd = true
-    } else {
-      $service_systemd = false
-    }
-
-    if $::osfamily == 'RedHat' {
-      $cassandra_optutils_package = 'cassandra30-tools'
-      $cassandra_package = 'cassandra30'
-      $version = '3.0.3-1'
-    } else {
-      $cassandra_optutils_package = 'cassandra-tools'
-      $cassandra_package = 'cassandra'
-      $version = '3.0.3'
-    }
-
-    class { 'cassandra':
-      authenticator               => 'PasswordAuthenticator',
-      cassandra_9822              => true,
-      commitlog_directory_mode    => '0770',
-      data_file_directories_mode  => '0770',
-      hints_directory             => '/var/lib/cassandra/hints',
-      package_ensure              => $version,
-      package_name                => $cassandra_package,
-      saved_caches_directory_mode => '0770',
-      service_systemd             => $service_systemd,
-    }
-  EOS
-
-  describe '########### Ensure config file does get updated.' do
-    it 'Initial install manifest again' do
-      apply_manifest(check_against_previous_version_pp,
-                     catch_failures: true)
-    end
-    it 'Copy the current module to the side without error.' do
-      shell('cp -R /etc/puppet/modules/cassandra /var/tmp',
-            acceptable_exit_codes: 0)
-    end
-    it 'Remove the current module without error.' do
-      shell('puppet module uninstall locp-cassandra',
-            acceptable_exit_codes: 0)
-    end
-    it 'Install the latest module from the forge.' do
-      shell('puppet module install locp-cassandra',
-            acceptable_exit_codes: 0)
-    end
-    it 'Check install works without changes with previous module version.' do
-      expect(apply_manifest(check_against_previous_version_pp,
-                            catch_failures: true).exit_code).to be_zero
-    end
-  end
-
-  describe '########### Gather service information (when in debug mode).' do
-    it 'Show the cassandra system log.' do
-      shell("grep -v -e '^INFO' -e '^\s*INFO' /var/log/cassandra/system.log")
+    describe '########### Uninstall Cassandra 2.2.' do
+      it 'should work with no errors' do
+        apply_manifest(cassandra_uninstall_pp, catch_failures: true)
+      end
     end
   end
 end

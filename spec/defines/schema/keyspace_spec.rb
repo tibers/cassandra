@@ -13,6 +13,14 @@ describe 'cassandra::schema::keyspace' do
   end
 
   let!(:stdlib_stubs) do
+    MockFunction.new('concat') do |f|
+      f.stubbed.with([], '/etc/cassandra')
+       .returns(['/etc/cassandra'])
+      f.stubbed.with([], '/etc/cassandra/default.conf')
+       .returns(['/etc/cassandra/default.conf'])
+      f.stubbed.with(['/etc/cassandra'], '/etc/cassandra/default.conf')
+       .returns(['/etc/cassandra', '/etc/cassandra/default.conf'])
+    end
     MockFunction.new('delete') do |f|
       f.stubbed.with(
         {
@@ -20,7 +28,8 @@ describe 'cassandra::schema::keyspace' do
           'dc1' => '3',
           'dc2' => '2'
         },
-        'keyspace_class').returns('dc1' => '3', 'dc2' => '2')
+        'keyspace_class'
+      ).returns('dc1' => '3', 'dc2' => '2')
     end
     MockFunction.new('join') do |f|
       f.stubbed.with(
@@ -28,7 +37,8 @@ describe 'cassandra::schema::keyspace' do
           '\'dc1\': ' => '3',
           '\'dc2\': ' => '2'
         },
-        ', ').returns('\'dc1\': 3, \'dc2\': 2')
+        ', '
+      ).returns('\'dc1\': 3, \'dc2\': 2')
     end
     MockFunction.new('join_keys_to_values') do |f|
       f.stubbed.with(
@@ -36,14 +46,16 @@ describe 'cassandra::schema::keyspace' do
           '\'dc1' => '3',
           '\'dc2' => '2'
         },
-        '\': ').returns('\'dc1\': ' => '3', '\'dc2\': ' => '2')
+        '\': '
+      ).returns('\'dc1\': ' => '3', '\'dc2\': ' => '2')
     end
     MockFunction.new('prefix') do |f|
       f.stubbed.with(
         {
           'dc1' => '3',
           'dc2' => '2'
-        }, '\'').returns('\'dc1' => '3', '\'dc2' => '2')
+        }, '\''
+      ).returns('\'dc1' => '3', '\'dc2' => '2')
     end
   end
 
@@ -67,10 +79,10 @@ describe 'cassandra::schema::keyspace' do
       }
     end
 
-    it { should compile }
-    it { should contain_class('cassandra::schema') }
     it do
-      should contain_exec('/usr/bin/cqlsh   -e "CREATE KEYSPACE IF NOT EXISTS foobar WITH REPLICATION = { \'class\' : \'SimpleStrategy\', \'replication_factor\' : 3 } AND DURABLE_WRITES = true"  ')
+      should compile
+      should contain_class('cassandra::schema')
+      should contain_exec('/usr/bin/cqlsh   -e "CREATE KEYSPACE IF NOT EXISTS foobar WITH REPLICATION = { \'class\' : \'SimpleStrategy\', \'replication_factor\' : 3 } AND DURABLE_WRITES = true" localhost 9042')
     end
   end
 
@@ -95,10 +107,9 @@ describe 'cassandra::schema::keyspace' do
       }
     end
 
-    it { should contain_cassandra__schema__keyspace('foobar') }
-
     it do
-      should contain_exec('/usr/bin/cqlsh   -e "CREATE KEYSPACE IF NOT EXISTS foobar WITH REPLICATION = { \'class\' : \'NetworkTopologyStrategy\', \'dc1\': 3, \'dc2\': 2 } AND DURABLE_WRITES = true"  ')
+      should contain_cassandra__schema__keyspace('foobar')
+      should contain_exec('/usr/bin/cqlsh   -e "CREATE KEYSPACE IF NOT EXISTS foobar WITH REPLICATION = { \'class\' : \'NetworkTopologyStrategy\', \'dc1\': 3, \'dc2\': 2 } AND DURABLE_WRITES = true" localhost 9042')
     end
   end
 
@@ -118,7 +129,7 @@ describe 'cassandra::schema::keyspace' do
 
     it do
       should compile
-      should contain_exec('/usr/bin/cqlsh   -e "DROP KEYSPACE foobar"  ')
+      should contain_exec('/usr/bin/cqlsh   -e "DROP KEYSPACE foobar" localhost 9042')
     end
   end
 
@@ -130,6 +141,7 @@ describe 'cassandra::schema::keyspace' do
     end
 
     let(:title) { 'foobar' }
+
     let(:params) do
       {
         ensure: 'latest'

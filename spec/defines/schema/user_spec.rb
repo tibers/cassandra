@@ -12,6 +12,17 @@ describe 'cassandra::schema::user' do
     ]
   end
 
+  let!(:stdlib_stubs) do
+    MockFunction.new('concat') do |f|
+      f.stubbed.with([], '/etc/cassandra')
+       .returns(['/etc/cassandra'])
+      f.stubbed.with([], '/etc/cassandra/default.conf')
+       .returns(['/etc/cassandra/default.conf'])
+      f.stubbed.with(['/etc/cassandra'], '/etc/cassandra/default.conf')
+       .returns(['/etc/cassandra', '/etc/cassandra/default.conf'])
+    end
+  end
+
   context 'Create a user' do
     let :facts do
       {
@@ -29,7 +40,10 @@ describe 'cassandra::schema::user' do
     end
 
     it do
-      should contain_exec('/usr/bin/cqlsh   -e "CREATE USER IF NOT EXISTS akers WITH PASSWORD \'Niner2\' SUPERUSER"  ')
+      should contain_cassandra__schema__user('akers').with_ensure('present')
+      should contain_exec('Create user (akers)').with(
+        command: '/usr/bin/cqlsh   -e "CREATE USER IF NOT EXISTS akers WITH PASSWORD \'Niner2\' SUPERUSER" localhost 9042'
+      )
     end
   end
 
@@ -50,7 +64,9 @@ describe 'cassandra::schema::user' do
     end
 
     it do
-      should contain_exec('/usr/bin/cqlsh   -e "DROP USER akers"  ')
+      should contain_exec('Delete user (akers)').with(
+        command: '/usr/bin/cqlsh   -e "DROP USER akers" localhost 9042'
+      )
     end
   end
 

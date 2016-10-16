@@ -17,14 +17,22 @@ deployment:
     branch: /^bugfix.*/
     commands: 
       - "./scripts/circle.bash merge release/patch"
-  feature231:
-    branch: feature/231/client_security
-    commands:
-      - "./scripts/circle.bash merge release/minor"
   improvement: 
     branch: /^improvement.*/
     commands: 
       - "./scripts/circle.bash merge release/patch"
+  legacy_bugfix:
+    branch: /^legacy/bugfix.*/
+    commands: 
+      - "./scripts/circle.bash merge legacy/patch"
+  legacy_improvement:
+    branch: /^legacy/improvement.*/
+    commands: 
+      - "./scripts/circle.bash merge legacy/patch"
+  legacy_patch_release:
+    branch: legacy/patch
+    commands: 
+      - "./scripts/circle.bash merge legacy/minor"
   master: 
     branch: master
     commands: 
@@ -34,6 +42,10 @@ deployment:
     branch: release/patch
     commands: 
       - "./scripts/circle.bash merge release/minor"
+  remove_config_path_parents:
+    branch: spike/remove_config_path_parents
+    commands:
+      - "./scripts/circle.bash merge release/major"
 machine: 
   environment:
     PUPPET_GEM_VERSION: '~> 4.0'
