@@ -74,12 +74,28 @@
 <div class="docstring">
   <div class="discussion">
     
-<p>cassandra::schema::table</p>
+<p>Create or drop tables within the schema.</p>
 
   </div>
 </div>
 <div class="tags">
-  <p class="tag_title">Parameters:</p>
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code>cassandra::schema::table { &#39;users&#39;:
+  keyspace =&gt; &#39;mykeyspace&#39;,
+  columns  =&gt; {
+    &#39;userid&#39;      =&gt; &#39;int&#39;,
+    &#39;fname&#39;       =&gt; &#39;text&#39;,
+    &#39;lname&#39;       =&gt; &#39;text&#39;,
+    &#39;PRIMARY KEY&#39; =&gt; &#39;(userid)&#39;,
+  },
+}</code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
 <ul class="param">
   
     <li>
@@ -87,22 +103,14 @@
         <span class='name'>keyspace</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
       
-    </li>
-  
-    <li>
-      
-        <span class='name'>ensure</span>
-      
-      
-        <span class='type'>(<tt>Any</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>present</tt>)</em>
-      
+        &mdash;
+        <div class='inline'>
+<p>The name of the keyspace.</p>
+</div>
       
     </li>
   
@@ -111,11 +119,35 @@
         <span class='name'>columns</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>hash</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>{}</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>A hash of the columns to be placed in the table. Optional if the table is
+to be absent.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>ensure</span>
+      
+      
+        <span class='type'>(<tt>present|absent</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>present</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>Ensure a keyspace is created or dropped.</p>
+</div>
       
     </li>
   
@@ -124,11 +156,16 @@
         <span class='name'>options</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>array</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>[]</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>Options to be added to the table creation.</p>
+</div>
       
     </li>
   
@@ -137,11 +174,16 @@
         <span class='name'>table</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>$title</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>The name of the table. Defaults to the name of the resource.</p>
+</div>
       
     </li>
   
@@ -155,23 +197,6 @@
         <pre class="lines">
 
 
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
 19
 20
 21
@@ -193,10 +218,27 @@
 37
 38
 39
-40</pre>
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57</pre>
       </td>
       <td>
-        <pre class="code"><span class="info file"># File 'manifests/schema/table.pp', line 2</span>
+        <pre class="code"><span class="info file"># File 'manifests/schema/table.pp', line 19</span>
 
 define cassandra::schema::table (
   $keyspace,
@@ -244,7 +286,7 @@ define cassandra::schema::table (
 </div>
 
       <div id="footer">
-  Generated on Fri Oct 21 22:51:20 2016 by
+  Generated on Fri Oct 21 23:18:24 2016 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.3.1).
 </div>
