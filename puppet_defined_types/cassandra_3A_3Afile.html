@@ -74,12 +74,65 @@
 <div class="docstring">
   <div class="discussion">
     
-<p>cassandra::file</p>
+<p>A defined type for altering files relative to the configuration directory.</p>
 
   </div>
 </div>
 <div class="tags">
-  <p class="tag_title">Parameters:</p>
+  
+  <div class="examples">
+    <p class="tag_title">Examples:</p>
+    
+      
+      <pre class="example code"><code>if $::memorysize_mb &lt; 24576.0 {
+  $max_heap_size_in_mb = floor($::memorysize_mb / 2)
+} elsif $::memorysize_mb &lt; 8192.0 {
+  $max_heap_size_in_mb = floor($::memorysize_mb / 4)
+} else {
+  $max_heap_size_in_mb = 8192
+}
+
+$heap_new_size = $::processorcount * 100
+
+cassandra::file { &quot;Set Java/Cassandra max heap size to ${max_heap_size_in_mb}.&quot;:
+  file       =&gt; &#39;cassandra-env.sh&#39;,
+  file_lines =&gt; {
+    &#39;MAX_HEAP_SIZE&#39; =&gt; {
+      line  =&gt; &quot;MAX_HEAP_SIZE=&#39;${max_heap_size_in_mb}M&#39;&quot;,
+      match =&gt; &#39;^#?MAX_HEAP_SIZE=.*&#39;,
+    },
+  }
+}
+
+cassandra::file { &quot;Set Java/Cassandra heap new size to ${heap_new_size}.&quot;:
+  file       =&gt; &#39;cassandra-env.sh&#39;,
+  file_lines =&gt; {
+    &#39;HEAP_NEWSIZE&#39;  =&gt; {
+      line  =&gt; &quot;HEAP_NEWSIZE=&#39;${heap_new_size}M&#39;&quot;,
+      match =&gt; &#39;^#?HEAP_NEWSIZE=.*&#39;,
+    }
+  }
+}
+$tmpdir = &#39;/var/lib/cassandra/tmp&#39;
+
+file { $tmpdir:
+  ensure =&gt; directory,
+  owner  =&gt; &#39;cassandra&#39;,
+  group  =&gt; &#39;cassandra&#39;,
+}
+
+cassandra::file { &#39;Set java.io.tmpdir&#39;:
+  file       =&gt; &#39;jvm.options&#39;,
+  file_lines =&gt; {
+    &#39;java.io.tmpdir&#39; =&gt; {
+      line =&gt; &quot;-Djava.io.tmpdir=${tmpdir}&quot;,
+    },
+  },
+  require    =&gt; File[$tmpdir],
+}</code></pre>
+    
+  </div>
+<p class="tag_title">Parameters:</p>
 <ul class="param">
   
     <li>
@@ -87,11 +140,16 @@
         <span class='name'>file</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>$title</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>The name of the file relative to the <code>config_path</code>.</p>
+</div>
       
     </li>
   
@@ -100,11 +158,16 @@
         <span class='name'>config_path</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>$::cassandra::config_path</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>The path to the configuration directory.</p>
+</div>
       
     </li>
   
@@ -113,11 +176,20 @@
         <span class='name'>file_lines</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>undef</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>If set, then the <a
+href="https://docs.puppet.com/puppet/latest/reference/function.html#createresources">create_resources</a>
+will be used to create an array of <a
+href="https://forge.puppet.com/puppetlabs/stdlib#file_line">file_line</a>
+resources.</p>
+</div>
       
     </li>
   
@@ -144,38 +216,38 @@
         <pre class="lines">
 
 
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30</pre>
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83</pre>
       </td>
       <td>
-        <pre class="code"><span class="info file"># File 'manifests/file.pp', line 2</span>
+        <pre class="code"><span class="info file"># File 'manifests/file.pp', line 55</span>
 
 define cassandra::file(
   $file             = $title,
@@ -213,7 +285,7 @@ define cassandra::file(
 </div>
 
       <div id="footer">
-  Generated on Fri Oct 21 23:18:24 2016 by
+  Generated on Sat Oct 22 12:02:36 2016 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.3.1).
 </div>

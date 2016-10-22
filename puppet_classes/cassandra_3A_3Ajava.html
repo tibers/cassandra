@@ -81,7 +81,7 @@
 <div class="docstring">
   <div class="discussion">
     
-<p>Please see the README file for the module.</p>
+<p>A class to install Java and JNA packages.</p>
 
   </div>
 </div>
@@ -94,11 +94,18 @@
         <span class='name'>aptkey</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>hash</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>undef</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>If supplied, this should be a hash of <code>apt::key</code> resources that
+will be passed to the create_resources function. This is ignored on
+non-Debian systems.</p>
+</div>
       
     </li>
   
@@ -107,11 +114,18 @@
         <span class='name'>aptsource</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>hash</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>undef</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>If supplied, this should be a hash of <code>apt::source</code> resources
+that will be passed to the create_resources function. This is ignored on
+non-Red Hat`</p>
+</div>
       
     </li>
   
@@ -120,11 +134,17 @@
         <span class='name'>jna_ensure</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
-        <em class="default">(defaults to: <tt>&#39;present&#39;</tt>)</em>
+        <em class="default">(defaults to: <tt>present</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>Is passed to the package reference for the JNA package. Valid values are
+<code>present</code> or a version number.</p>
+</div>
       
     </li>
   
@@ -133,11 +153,16 @@
         <span class='name'>jna_package_name</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>$::cassandra::params::jna_package_name</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>The name of the JNA package.</p>
+</div>
       
     </li>
   
@@ -149,8 +174,14 @@
         <span class='type'>(<tt>Any</tt>)</span>
       
       
-        <em class="default">(defaults to: <tt>&#39;present&#39;</tt>)</em>
+        <em class="default">(defaults to: <tt>present</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>Is passed to the package reference for the JRE/JDK package. Valid values
+are <code>present</code> or a version number.</p>
+</div>
       
     </li>
   
@@ -159,11 +190,16 @@
         <span class='name'>package_name</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>$::cassandra::params::java_package</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>The name of the Java package to be installed.</p>
+</div>
       
     </li>
   
@@ -172,11 +208,18 @@
         <span class='name'>yumrepo</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>hash</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>undef</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>If supplied, this should be a hash of <em>yumrepo</em> resources that will
+be passed to the create_resources function. This is ignored on non-Red Hat
+systems.</p>
+</div>
       
     </li>
   
@@ -190,21 +233,6 @@
         <pre class="lines">
 
 
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
 17
 18
 19
@@ -239,17 +267,32 @@
 48
 49
 50
-51</pre>
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66</pre>
       </td>
       <td>
-        <pre class="code"><span class="info file"># File 'manifests/java.pp', line 2</span>
+        <pre class="code"><span class="info file"># File 'manifests/java.pp', line 17</span>
 
 class cassandra::java (
   $aptkey           = undef,
   $aptsource        = undef,
-  $jna_ensure       = &#39;present&#39;,
+  $jna_ensure       = present,
   $jna_package_name = $::cassandra::params::jna_package_name,
-  $package_ensure   = &#39;present&#39;,
+  $package_ensure   = present,
   $package_name     = $::cassandra::params::java_package,
   $yumrepo          = undef,
   ) inherits cassandra::params {
@@ -301,7 +344,7 @@ class cassandra::java (
 </div>
 
       <div id="footer">
-  Generated on Fri Oct 21 23:18:24 2016 by
+  Generated on Sat Oct 22 12:02:36 2016 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.3.1).
 </div>
