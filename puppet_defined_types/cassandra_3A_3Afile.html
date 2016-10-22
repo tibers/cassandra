@@ -198,11 +198,17 @@ resources.</p>
         <span class='name'>service_refresh</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>boolean</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>true</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>Is the Cassandra service is to be notified if the environment file is
+changed.</p>
+</div>
       
     </li>
   
@@ -216,8 +222,6 @@ resources.</p>
         <pre class="lines">
 
 
-55
-56
 57
 58
 59
@@ -244,10 +248,12 @@ resources.</p>
 80
 81
 82
-83</pre>
+83
+84
+85</pre>
       </td>
       <td>
-        <pre class="code"><span class="info file"># File 'manifests/file.pp', line 55</span>
+        <pre class="code"><span class="info file"># File 'manifests/file.pp', line 57</span>
 
 define cassandra::file(
   $file             = $title,
@@ -285,7 +291,7 @@ define cassandra::file(
 </div>
 
       <div id="footer">
-  Generated on Sat Oct 22 12:02:36 2016 by
+  Generated on Sat Oct 22 14:14:20 2016 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.3.1).
 </div>

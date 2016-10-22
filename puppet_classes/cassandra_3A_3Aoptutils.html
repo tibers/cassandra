@@ -81,7 +81,7 @@
 <div class="docstring">
   <div class="discussion">
     
-<p>Please see the README file for the module.</p>
+<p>A class to install the optional Cassandra tools package.</p>
 
   </div>
 </div>
@@ -94,11 +94,17 @@
         <span class='name'>package_ensure</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;present&#39;</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>Can be <code>present</code>, <code>latest</code> or a specific version
+number.</p>
+</div>
       
     </li>
   
@@ -107,11 +113,16 @@
         <span class='name'>package_name</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>$::cassandra::params::optutils_package_name</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>The name of the optional utilities package to be installed.</p>
+</div>
       
     </li>
   
@@ -125,18 +136,18 @@
         <pre class="lines">
 
 
-2
-3
-4
-5
 6
 7
 8
 9
-10</pre>
+10
+11
+12
+13
+14</pre>
       </td>
       <td>
-        <pre class="code"><span class="info file"># File 'manifests/optutils.pp', line 2</span>
+        <pre class="code"><span class="info file"># File 'manifests/optutils.pp', line 6</span>
 
 class cassandra::optutils (
   $package_ensure = &#39;present&#39;,
@@ -154,7 +165,7 @@ class cassandra::optutils (
 </div>
 
       <div id="footer">
-  Generated on Sat Oct 22 12:02:36 2016 by
+  Generated on Sat Oct 22 14:14:20 2016 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.3.1).
 </div>

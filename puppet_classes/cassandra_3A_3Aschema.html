@@ -81,7 +81,9 @@
 <div class="docstring">
   <div class="discussion">
     
-<p>A class for maintaining DB schemas.</p>
+<p>A class to maintain the database schema. Please note that cqlsh expects
+Python 2.7 to be installed. This may be a problem of older distributions
+(CentOS 6 for example).</p>
 
   </div>
 </div>
@@ -94,11 +96,17 @@
         <span class='name'>connection_tries</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>integer</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>6</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>How many times do try to connect to Cassandra. See also
+<code>connection_try_sleep</code>.</p>
+</div>
       
     </li>
   
@@ -107,11 +115,17 @@
         <span class='name'>connection_try_sleep</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>integer</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>30</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>How much time to allow between the number of tries specified in
+<code>connection_tries</code>.</p>
+</div>
       
     </li>
   
@@ -120,11 +134,16 @@
         <span class='name'>cql_types</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>hash</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>{}</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>Creates new <code>cassandra::schema::cql_type</code> resources.</p>
+</div>
       
     </li>
   
@@ -133,11 +152,16 @@
         <span class='name'>cqlsh_additional_options</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;&#39;</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>Any additional options to be passed to the <code>cqlsh</code> command.</p>
+</div>
       
     </li>
   
@@ -146,11 +170,19 @@
         <span class='name'>cqlsh_client_config</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>undef</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>Set this to a file name (e.g. &#39;/root/.puppetcqlshrc&#39;) that will
+then be used to contain the the credentials for connecting to Cassandra.
+This is a more secure option than having the credentials appearing on the
+command line. This option is only available in Cassandra &gt;= 2.1.</p>
+</div>
       
     </li>
   
@@ -159,11 +191,17 @@
         <span class='name'>cqlsh_client_tmpl</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;cassandra/cqlshrc.erb&#39;</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>The location of the template for configuring the credentials for the cqlsh
+client. This is ignored unless <code>cqlsh_client_config</code> is set.</p>
+</div>
       
     </li>
   
@@ -172,11 +210,16 @@
         <span class='name'>cqlsh_command</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;/usr/bin/cqlsh&#39;</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>The full path to the <code>cqlsh</code> command.</p>
+</div>
       
     </li>
   
@@ -185,11 +228,17 @@
         <span class='name'>cqlsh_host</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;localhost&#39;</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>The host for the <code>cqlsh</code> command to connect to. See also
+<code>cqlsh_port</code>.</p>
+</div>
       
     </li>
   
@@ -198,11 +247,17 @@
         <span class='name'>cqlsh_password</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>undef</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>If credentials are require for connecting, specify the password here. See
+also <code>cqlsh_user</code>, <code>cqlsh_client_config</code>.</p>
+</div>
       
     </li>
   
@@ -211,11 +266,17 @@
         <span class='name'>cqlsh_port</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>integer</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>9042</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>The host for the <code>cqlsh</code> command to connect to. See also
+<code>cqlsh_host</code>.</p>
+</div>
       
     </li>
   
@@ -224,11 +285,17 @@
         <span class='name'>cqlsh_user</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;cassandra&#39;</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>If credentials are required for connecting, specify the password here. See
+also <code>cqlsh_password</code>, <code>cqlsh_client_config</code></p>
+</div>
       
     </li>
   
@@ -237,11 +304,16 @@
         <span class='name'>indexes</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>hash</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>{}</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>Creates new <code>cassandra::schema::index</code> resources.</p>
+</div>
       
     </li>
   
@@ -250,11 +322,16 @@
         <span class='name'>keyspaces</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>hash</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>{}</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>Creates new <code>cassandra::schema::keyspace</code> resources.</p>
+</div>
       
     </li>
   
@@ -263,11 +340,16 @@
         <span class='name'>tables</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>hash</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>{}</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>Creates new <code>cassandra::schema::table</code> resources.</p>
+</div>
       
     </li>
   
@@ -276,11 +358,16 @@
         <span class='name'>users</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>hash</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>{}</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>Creates new <code>cassandra::schema::user</code> resources.</p>
+</div>
       
     </li>
   
@@ -294,37 +381,6 @@
         <pre class="lines">
 
 
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
 33
 34
 35
@@ -378,10 +434,41 @@
 83
 84
 85
-86</pre>
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117</pre>
       </td>
       <td>
-        <pre class="code"><span class="info file"># File 'manifests/schema.pp', line 2</span>
+        <pre class="code"><span class="info file"># File 'manifests/schema.pp', line 33</span>
 
 class cassandra::schema (
   $connection_tries         = 6,
@@ -475,7 +562,7 @@ class cassandra::schema (
 </div>
 
       <div id="footer">
-  Generated on Sat Oct 22 12:02:36 2016 by
+  Generated on Sat Oct 22 14:14:20 2016 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.3.1).
 </div>
