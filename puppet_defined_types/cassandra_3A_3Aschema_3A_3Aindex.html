@@ -74,7 +74,7 @@
 <div class="docstring">
   <div class="discussion">
     
-<p>cassandra::schema::index</p>
+<p>Create or drop indexes within the schema.</p>
 
   </div>
 </div>
@@ -84,36 +84,19 @@
   
     <li>
       
-        <span class='name'>keyspace</span>
-      
-      
-        <span class='type'>(<tt>Any</tt>)</span>
-      
-      
-      
-    </li>
-  
-    <li>
-      
-        <span class='name'>table</span>
-      
-      
-        <span class='type'>(<tt>Any</tt>)</span>
-      
-      
-      
-    </li>
-  
-    <li>
-      
         <span class='name'>ensure</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>present|absent</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>present</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>Create or dro[ the index.</p>
+</div>
       
     </li>
   
@@ -122,11 +105,17 @@
         <span class='name'>class_name</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>undef</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>The name of the class to be associated with an index when creating a custom
+index.</p>
+</div>
       
     </li>
   
@@ -135,11 +124,16 @@
         <span class='name'>index</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>$title</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>The name of the index. Defaults to the name of the resource.</p>
+</div>
       
     </li>
   
@@ -148,11 +142,32 @@
         <span class='name'>keys</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>undef</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>The columns that the index is being created on.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>keyspace</span>
+      
+      
+        <span class='type'>(<tt>string</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The name the keyspace that the index is to be associated with.</p>
+</div>
       
     </li>
   
@@ -161,11 +176,32 @@
         <span class='name'>options</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>undef</tt>)</em>
       
+      
+        &mdash;
+        <div class='inline'>
+<p>Any options to be added to the index.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>table</span>
+      
+      
+        <span class='type'>(<tt>string</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The name of the table that the index is to be associated with.</p>
+</div>
       
     </li>
   
@@ -179,16 +215,6 @@
         <pre class="lines">
 
 
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
 12
 13
 14
@@ -233,10 +259,20 @@
 53
 54
 55
-56</pre>
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66</pre>
       </td>
       <td>
-        <pre class="code"><span class="info file"># File 'manifests/schema/index.pp', line 2</span>
+        <pre class="code"><span class="info file"># File 'manifests/schema/index.pp', line 12</span>
 
 define cassandra::schema::index(
   $keyspace,
@@ -300,7 +336,7 @@ define cassandra::schema::index(
 </div>
 
       <div id="footer">
-  Generated on Sat Oct 22 14:14:20 2016 by
+  Generated on Mon Oct 24 21:34:29 2016 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.3.1).
 </div>

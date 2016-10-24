@@ -434,7 +434,7 @@ class cassandra::datastax_agent (
   file { $address_config_file:
     owner   =&gt; &#39;cassandra&#39;,
     group   =&gt; &#39;cassandra&#39;,
-    mode    =&gt; &#39;0640&#39;,
+    mode    =&gt; &#39;0644&#39;,
     require =&gt; Package[$package_name],
   }
 
@@ -479,7 +479,7 @@ class cassandra::datastax_agent (
 </div>
 
       <div id="footer">
-  Generated on Sat Oct 22 14:14:20 2016 by
+  Generated on Mon Oct 24 21:34:29 2016 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.3.1).
 </div>
