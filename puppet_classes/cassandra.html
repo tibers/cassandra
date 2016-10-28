@@ -95,7 +95,7 @@ configuration file.</p>
         <span class='name'>cassandra_2356_sleep_seconds</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>boolean</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>5</tt>)</em>
@@ -117,7 +117,7 @@ operating systems as this bug only affects Debian systems.</p>
         <span class='name'>cassandra_9822</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>boolean</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>false</tt>)</em>
@@ -138,7 +138,7 @@ This this bug only affects Debian systems.</p>
         <span class='name'>cassandra_yaml_tmpl</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;cassandra/cassandra.yaml.erb&#39;</tt>)</em>
@@ -149,6 +149,19 @@ This this bug only affects Debian systems.</p>
 <p>The path to the Puppet template for the Cassandra configuration file. This
 allows the user to supply their own customized template.`</p>
 </div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>commitlog_directory</span>
+      
+      
+        <span class='type'>(<tt>string</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>undef</tt>)</em>
+      
       
     </li>
   
@@ -535,19 +548,6 @@ installed. Will silently continue if the executable does not exist.</p>
   
     <li>
       
-        <span class='name'>commitlog_directory</span>
-      
-      
-        <span class='type'>(<tt>Any</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>undef</tt>)</em>
-      
-      
-    </li>
-  
-    <li>
-      
         <span class='name'>commitlog_directory_mode</span>
       
       
@@ -647,7 +647,6 @@ installed. Will silently continue if the executable does not exist.</p>
         <pre class="lines">
 
 
-95
 96
 97
 98
@@ -898,10 +897,11 @@ installed. Will silently continue if the executable does not exist.</p>
 343
 344
 345
-346</pre>
+346
+347</pre>
       </td>
       <td>
-        <pre class="code"><span class="info file"># File 'manifests/init.pp', line 95</span>
+        <pre class="code"><span class="info file"># File 'manifests/init.pp', line 96</span>
 
 class cassandra (
   $cassandra_2356_sleep_seconds = 5,
@@ -1162,7 +1162,7 @@ class cassandra (
 </div>
 
       <div id="footer">
-  Generated on Fri Oct 28 12:21:23 2016 by
+  Generated on Fri Oct 28 12:22:42 2016 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.3.1).
 </div>
