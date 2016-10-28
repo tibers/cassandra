@@ -163,6 +163,32 @@ allows the user to supply their own customized template.`</p>
         <em class="default">(defaults to: <tt>undef</tt>)</em>
       
       
+        &mdash;
+        <div class='inline'>
+<p>The path to the commitlog directory. If set, the directory will be managed
+as a Puppet resource. Do not specify a value here and in the
+<code>settings</code> hash as they are mutually exclusive.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>commitlog_directory_mode</span>
+      
+      
+        <span class='type'>(<tt>string</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>&#39;0750&#39;</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The mode for the <code>commitlog_directory</code> is ignored unless
+<code>commitlog_directory</code> is specified.</p>
+</div>
+      
     </li>
   
     <li>
@@ -170,7 +196,7 @@ allows the user to supply their own customized template.`</p>
         <span class='name'>config_file_mode</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;0644&#39;</tt>)</em>
@@ -206,7 +232,7 @@ allows the user to supply their own customized template.`</p>
         <span class='name'>dc</span>
       
       
-        <span class='type'>(<tt>Any</tt>)</span>
+        <span class='type'>(<tt>string</tt>)</span>
       
       
         <em class="default">(defaults to: <tt>&#39;DC1&#39;</tt>)</em>
@@ -548,19 +574,6 @@ installed. Will silently continue if the executable does not exist.</p>
   
     <li>
       
-        <span class='name'>commitlog_directory_mode</span>
-      
-      
-        <span class='type'>(<tt>Any</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>&#39;0750&#39;</tt>)</em>
-      
-      
-    </li>
-  
-    <li>
-      
         <span class='name'>data_file_directories</span>
       
       
@@ -647,12 +660,6 @@ installed. Will silently continue if the executable does not exist.</p>
         <pre class="lines">
 
 
-96
-97
-98
-99
-100
-101
 102
 103
 104
@@ -898,10 +905,16 @@ installed. Will silently continue if the executable does not exist.</p>
 344
 345
 346
-347</pre>
+347
+348
+349
+350
+351
+352
+353</pre>
       </td>
       <td>
-        <pre class="code"><span class="info file"># File 'manifests/init.pp', line 96</span>
+        <pre class="code"><span class="info file"># File 'manifests/init.pp', line 102</span>
 
 class cassandra (
   $cassandra_2356_sleep_seconds = 5,
@@ -1162,7 +1175,7 @@ class cassandra (
 </div>
 
       <div id="footer">
-  Generated on Fri Oct 28 12:27:59 2016 by
+  Generated on Fri Oct 28 12:32:58 2016 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.3.1).
 </div>
