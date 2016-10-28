@@ -331,6 +331,46 @@ Debian. If you set this option to false then you must also at least set the
   
     <li>
       
+        <span class='name'>hints_directory</span>
+      
+      
+        <span class='type'>(<tt>string</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>undef</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The path to the hints directory. If set, the directory will be managed as a
+Puppet resource. Do not specify a value here and in the
+<code>settings</code> hash as they are mutually exclusive. Do not set this
+option in Cassandra versions before 3.0.0.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>hints_directory_mode</span>
+      
+      
+        <span class='type'>(<tt>string</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>&#39;0750&#39;</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The mode for the <code>hints_directory</code> is ignored unless
+<code>hints_directory</code> is specified.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
         <span class='name'>package_ensure</span>
       
       
@@ -425,6 +465,45 @@ for more details.</p>
         &mdash;
         <div class='inline'>
 <p>The template for creating the snitch properties file.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>saved_caches_directory</span>
+      
+      
+        <span class='type'>(<tt>string</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>undef</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The path to the saved caches directory. If set, the directory will be
+managed as a Puppet resource. Do not specify a value here and in the
+<code>settings</code> hash as they are mutually exclusive.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>hints_directory_mode</span>
+      
+      
+        <span class='type'>(<tt>string</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>&#39;0750&#39;</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The mode for the <code>saved_caches_directory</code> is ignored unless
+<code>saved_caches_directory</code> is specified.</p>
 </div>
       
     </li>
@@ -613,45 +692,6 @@ installed. Will silently continue if the executable does not exist.</p>
   
     <li>
       
-        <span class='name'>hints_directory</span>
-      
-      
-        <span class='type'>(<tt>Any</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>undef</tt>)</em>
-      
-      
-    </li>
-  
-    <li>
-      
-        <span class='name'>hints_directory_mode</span>
-      
-      
-        <span class='type'>(<tt>Any</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>&#39;0750&#39;</tt>)</em>
-      
-      
-    </li>
-  
-    <li>
-      
-        <span class='name'>saved_caches_directory</span>
-      
-      
-        <span class='type'>(<tt>Any</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>undef</tt>)</em>
-      
-      
-    </li>
-  
-    <li>
-      
         <span class='name'>saved_caches_directory_mode</span>
       
       
@@ -673,20 +713,6 @@ installed. Will silently continue if the executable does not exist.</p>
         <pre class="lines">
 
 
-110
-111
-112
-113
-114
-115
-116
-117
-118
-119
-120
-121
-122
-123
 124
 125
 126
@@ -924,10 +950,24 @@ installed. Will silently continue if the executable does not exist.</p>
 358
 359
 360
-361</pre>
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375</pre>
       </td>
       <td>
-        <pre class="code"><span class="info file"># File 'manifests/init.pp', line 110</span>
+        <pre class="code"><span class="info file"># File 'manifests/init.pp', line 124</span>
 
 class cassandra (
   $cassandra_2356_sleep_seconds = 5,
@@ -1188,7 +1228,7 @@ class cassandra (
 </div>
 
       <div id="footer">
-  Generated on Fri Oct 28 13:27:34 2016 by
+  Generated on Fri Oct 28 13:32:27 2016 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.3.1).
 </div>
