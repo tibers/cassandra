@@ -229,6 +229,45 @@ as a Puppet resource. Do not specify a value here and in the
   
     <li>
       
+        <span class='name'>data_file_directories</span>
+      
+      
+        <span class='type'>(<tt>array</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>undef</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The path(s) to the date directory or directories. If set, the directories
+will be managed as a Puppet resource. Do not specify a value here and in
+the <code>settings</code> hash as they are mutually exclusive.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>data_file_directories_mode</span>
+      
+      
+        <span class='type'>(<tt>string</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>&#39;0750&#39;</tt>)</em>
+      
+      
+        &mdash;
+        <div class='inline'>
+<p>The mode for the <code>data_file_directories</code> is ignored unless
+<code>data_file_directories</code> is specified.</p>
+</div>
+      
+    </li>
+  
+    <li>
+      
         <span class='name'>dc</span>
       
       
@@ -574,32 +613,6 @@ installed. Will silently continue if the executable does not exist.</p>
   
     <li>
       
-        <span class='name'>data_file_directories</span>
-      
-      
-        <span class='type'>(<tt>Any</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>undef</tt>)</em>
-      
-      
-    </li>
-  
-    <li>
-      
-        <span class='name'>data_file_directories_mode</span>
-      
-      
-        <span class='type'>(<tt>Any</tt>)</span>
-      
-      
-        <em class="default">(defaults to: <tt>&#39;0750&#39;</tt>)</em>
-      
-      
-    </li>
-  
-    <li>
-      
         <span class='name'>hints_directory</span>
       
       
@@ -660,14 +673,6 @@ installed. Will silently continue if the executable does not exist.</p>
         <pre class="lines">
 
 
-102
-103
-104
-105
-106
-107
-108
-109
 110
 111
 112
@@ -911,10 +916,18 @@ installed. Will silently continue if the executable does not exist.</p>
 350
 351
 352
-353</pre>
+353
+354
+355
+356
+357
+358
+359
+360
+361</pre>
       </td>
       <td>
-        <pre class="code"><span class="info file"># File 'manifests/init.pp', line 102</span>
+        <pre class="code"><span class="info file"># File 'manifests/init.pp', line 110</span>
 
 class cassandra (
   $cassandra_2356_sleep_seconds = 5,
@@ -1175,7 +1188,7 @@ class cassandra (
 </div>
 
       <div id="footer">
-  Generated on Fri Oct 28 13:26:18 2016 by
+  Generated on Fri Oct 28 13:27:34 2016 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.3.1).
 </div>
