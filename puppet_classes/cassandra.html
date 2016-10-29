@@ -951,7 +951,9 @@ installed. Will silently continue if the executable does not exist.</p>
 372
 373
 374
-375</pre>
+375
+376
+377</pre>
       </td>
       <td>
         <pre class="code"><span class="info file"># File 'manifests/init.pp', line 124</span>
@@ -1041,17 +1043,19 @@ class cassandra (
       }
 
       group { &#39;cassandra&#39;:
-        ensure  =&gt; &#39;present&#39;,
+        ensure =&gt; present,
       }
 
-      user { &#39;cassandra&#39;:
-        ensure     =&gt; &#39;present&#39;,
+      $user = &#39;cassandra&#39;
+
+      user { $user:
+        ensure     =&gt; present,
         comment    =&gt; &#39;Cassandra database,,,&#39;,
         gid        =&gt; &#39;cassandra&#39;,
         home       =&gt; &#39;/var/lib/cassandra&#39;,
         shell      =&gt; &#39;/bin/false&#39;,
         managehome =&gt; true,
-        require    =&gt; Group[&#39;cassandra&#39;]
+        require    =&gt; Group[&#39;cassandra&#39;],
       }
       # End of CASSANDRA-2356 specific resources.
     }
@@ -1084,7 +1088,7 @@ class cassandra (
   }
 
   file { $config_path:
-    ensure  =&gt; &#39;directory&#39;,
+    ensure  =&gt; directory,
     group   =&gt; &#39;cassandra&#39;,
     owner   =&gt; &#39;cassandra&#39;,
     mode    =&gt; &#39;0755&#39;,
@@ -1102,7 +1106,7 @@ class cassandra (
     }
 
     $commitlog_directory_settings = merge($settings,
-      { &#39;commitlog_directory&#39; =&gt; $commitlog_directory })
+      { &#39;commitlog_directory&#39; =&gt; $commitlog_directory, })
   } else {
     $commitlog_directory_settings = $settings
   }
@@ -1135,7 +1139,7 @@ class cassandra (
     }
 
     $hints_directory_settings = merge($settings,
-      { &#39;hints_directory&#39; =&gt; $hints_directory })
+      { &#39;hints_directory&#39; =&gt; $hints_directory, })
   } else {
     $hints_directory_settings = $settings
   }
@@ -1151,7 +1155,7 @@ class cassandra (
     }
 
     $saved_caches_directory_settings = merge($settings,
-      { &#39;saved_caches_directory&#39; =&gt; $saved_caches_directory})
+      { &#39;saved_caches_directory&#39; =&gt; $saved_caches_directory, })
   } else {
     $saved_caches_directory_settings = $settings
   }
@@ -1173,7 +1177,7 @@ class cassandra (
   }
 
   file { $dc_rack_properties_file:
-    ensure  =&gt; &#39;file&#39;,
+    ensure  =&gt; file,
     content =&gt; template($rackdc_tmpl),
     owner   =&gt; &#39;cassandra&#39;,
     group   =&gt; &#39;cassandra&#39;,
@@ -1215,7 +1219,7 @@ class cassandra (
 </div>
 
       <div id="footer">
-  Generated on Fri Oct 28 13:32:58 2016 by
+  Generated on Sat Oct 29 11:01:47 2016 by
   <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.5 (ruby-2.3.1).
 </div>
